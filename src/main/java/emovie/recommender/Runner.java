@@ -1,6 +1,8 @@
 package emovie.recommender;
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
@@ -11,10 +13,14 @@ import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 
 public class Runner {
+    private static Properties properties;
+
     public static void main(final String[] args) throws Exception {
+        Runner.readProperties();
         DataModel dataModel = Runner.getDataModel();
 
         UserSimilarity similarity = new PearsonCorrelationSimilarity(dataModel);
@@ -29,18 +35,29 @@ public class Runner {
         }
     }
 
+    private static void readProperties() throws Exception {
+        properties = new Properties();
+        properties.load(ClassLoader.getSystemResourceAsStream("project.properties"));
+    }
+
     private static DataModel getDataModel() throws Exception {
-        /*
-        MysqlDataSource dataSource = new MysqlDataSource();
+        String dataSourceType = properties.getProperty("model.datasource");
 
-        dataSource.setServerName("localhost");
-        dataSource.setUser("root");
-        dataSource.setPassword("root");
-        dataSource.setDatabaseName("emovie");
+        if (dataSourceType.equals("file")) {
+            return new FileDataModel(new File(properties.getProperty("model.datasource.path")));
+        } else if (dataSourceType.equals("mysql")) {
+            // TODO: Finish MySQL implementation.
+            MysqlDataSource dataSource = new MysqlDataSource();
 
-        return new MySQLJDBCDataModel(dataSource, "rating", "user_id", "movie_id", "score", null);
-        */
+            dataSource.setServerName("localhost");
+            dataSource.setUser("root");
+            dataSource.setPassword("root");
+            dataSource.setDatabaseName("emovie");
 
-        return new FileDataModel(new File("C:\\Users\\Lumbendil\\Desktop\\ml-100k\\u.data"));
+            DataModel dataModel = new MySQLJDBCDataModel(dataSource, "rating", "user_id", "movie_id", "score", null);
+            throw new Exception("Missing finished implementation");
+        } else {
+            throw new Exception("Unknown datasource type");
+        }
     }
 }

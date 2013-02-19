@@ -1,0 +1,2 @@
+model.datasource = file
+model.datasource.path = C:\\Users\\Lumbendil\\Desktop\\ml-100k\\u.data

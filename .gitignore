@@ -1,3 +1,5 @@
+# Environment dependant files
+src/main/resources/project.properties
 # Maven files
 target
 # IDE Files
