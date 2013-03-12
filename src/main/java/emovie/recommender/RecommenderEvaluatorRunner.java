@@ -1,16 +1,15 @@
 package emovie.recommender;
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
+import emovie.recommender.builder.BuilderSettings;
+import emovie.recommender.builder.RecommenderBuilderImpl;
 import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
-import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.recommender.Recommender;
-
+import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.CityBlockSimilarity;
 import java.io.File;
-import java.util.Properties;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,26 +20,38 @@ import java.util.Properties;
  */
 public class RecommenderEvaluatorRunner {
     public static void main(final String[] args) throws Exception {
-        DataModel dataModel = RecommenderEvaluatorRunner.getDataModel(args[0]);
-        RecommenderBuilder recommenderBuilder = new RecommenderBuilderImpl();
-
+        DataModel dataModel = new FileDataModel(new File(args[0]));
         RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
+        int clusters = 30;
 
-        System.out.println(evaluator.evaluate(recommenderBuilder, null, dataModel, 0.5, 0.5));
+        BuilderSettings settings = new BuilderSettings(PearsonCorrelationSimilarity.class, clusters);
+        RecommenderBuilderImpl recommenderBuilder = new RecommenderBuilderImpl(settings);
+
+        System.out.println("Testing PearsonCorrelation similarity");
+        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
+        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
+        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
+
+        System.out.println("Testing LogLikelihood similarity");
+        recommenderBuilder.setSettings(new BuilderSettings(LogLikelihoodSimilarity.class, clusters));
+        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
+
+        System.out.println("Testing CityBlock similarity");
+        recommenderBuilder.setSettings(new BuilderSettings(CityBlockSimilarity.class, clusters));
+        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
+
+        System.out.println("Finished testing");
     }
 
-    private static DataModel getDataModel(String filePath) throws Exception {
-        return new FileDataModel(new File(filePath));
-        /*
-            MysqlDataSource dataSource = new MysqlDataSource();
+    /*
+        MysqlDataSource dataSource = new MysqlDataSource();
 
-            dataSource.setServerName(null);
-            dataSource.setUser(null);
-            dataSource.setPassword(null);
-            dataSource.setDatabaseName(null);
+        dataSource.setServerName(null);
+        dataSource.setUser(null);
+        dataSource.setPassword(null);
+        dataSource.setDatabaseName(null);
 
-            DataModel dataModel = new MySQLJDBCDataModel(dataSource, "rating", "user_id", "movie_id", "score", null);
-            throw new Exception("Missing finished implementation");
-        */
-    }
+        DataModel dataModel = new MySQLJDBCDataModel(dataSource, "rating", "user_id", "movie_id", "score", null);
+        throw new Exception("Missing finished implementation");
+    */
 }
