@@ -29,8 +29,6 @@ public class RecommenderEvaluatorRunner {
 
         System.out.println("Testing PearsonCorrelation similarity");
         evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
-        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
-        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
 
         System.out.println("Testing LogLikelihood similarity");
         recommenderBuilder.setSettings(new BuilderSettings(LogLikelihoodSimilarity.class, clusters));
