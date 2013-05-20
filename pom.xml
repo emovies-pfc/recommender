@@ -35,7 +35,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>emovie.recommender.RecommenderEvaluatorRunner</mainClass>
+                            <mainClass>emovie.recommender.runner.GearmanRunner</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

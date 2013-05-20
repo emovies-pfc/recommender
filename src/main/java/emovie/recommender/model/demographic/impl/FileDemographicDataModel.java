@@ -28,9 +28,12 @@ public class FileDemographicDataModel implements DemographicDataModel {
 
     private FastByIDMap<User> buildMap(File file)
     {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+        FastByIDMap<User> map = new FastByIDMap<User>(50);
+        // BufferedReader reader = new BufferedReader(new FileReader(file));
 
-        reader.readLine();
+        // reader.readLine();
+
+        return map;
     }
 
     private User parseLine(String line)
