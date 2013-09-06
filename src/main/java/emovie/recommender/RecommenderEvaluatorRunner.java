@@ -2,13 +2,16 @@ package emovie.recommender;
 
 import emovie.recommender.builder.BuilderSettings;
 import emovie.recommender.builder.RecommenderBuilderImpl;
-import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
+import emovie.recommender.builder.SVDRecommenderBuilderImpl;
+import emovie.recommender.builder.SlopeOneRecommenderBuilderImpl;
+import emovie.recommender.model.demographic.DemographicDataModel;
+import emovie.recommender.model.demographic.impl.FileDemographicDataModel;
+import org.apache.mahout.cf.taste.impl.eval.GenericRecommenderIRStatsEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
-import org.apache.mahout.cf.taste.impl.similarity.CityBlockSimilarity;
+
 import java.io.File;
 
 /**
@@ -20,36 +23,34 @@ import java.io.File;
  */
 public class RecommenderEvaluatorRunner {
     public static void main(final String[] args) throws Exception {
+
         DataModel dataModel = new FileDataModel(new File(args[0]));
-        RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
-        int clusters = 30;
+        DemographicDataModel demographicDataModel = new FileDemographicDataModel(new File(args[1]));
 
-        BuilderSettings settings = new BuilderSettings(PearsonCorrelationSimilarity.class, clusters);
-        RecommenderBuilderImpl recommenderBuilder = new RecommenderBuilderImpl(settings);
+        SettingsRunner runner = new SettingsRunner(
+                new RecommenderBuilderImpl(
+                    new BuilderSettings(LogLikelihoodSimilarity.class, 100, demographicDataModel, 0.06875f, 0.4875f, 0.35625008f, 0.16875f)
+                ),
+                dataModel);
 
-        System.out.println("Testing PearsonCorrelation similarity");
-        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
+        SettingsRunner runner2 = new SettingsRunner(
+                new RecommenderBuilderImpl(
+                        new BuilderSettings(LogLikelihoodSimilarity.class, 100)
+                ),
+                dataModel);
 
-        System.out.println("Testing LogLikelihood similarity");
-        recommenderBuilder.setSettings(new BuilderSettings(LogLikelihoodSimilarity.class, clusters));
-        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
+        SettingsRunner svdRunner = new SettingsRunner(new SVDRecommenderBuilderImpl(), dataModel);
+        SettingsRunner slopeOneRunner = new SettingsRunner(new SlopeOneRecommenderBuilderImpl(), dataModel);
 
-        System.out.println("Testing CityBlock similarity");
-        recommenderBuilder.setSettings(new BuilderSettings(CityBlockSimilarity.class, clusters));
-        evaluator.evaluate(recommenderBuilder, null, dataModel, 0.9, 0.1);
-
-        System.out.println("Finished testing");
+        System.out.println("Testing Generic Recommender without demographic");
+        runner2.run(true, false);
+        /*
+        System.out.println("Testing SVD Recommender");
+        svdRunner.run(true, false);
+        System.out.println("Testing SlopeOne");
+        slopeOneRunner.run(true, false);
+        System.out.println("Testing Generic Recommender with demographic");
+        runner.run(true, false);
+        */
     }
-
-    /*
-        MysqlDataSource dataSource = new MysqlDataSource();
-
-        dataSource.setServerName(null);
-        dataSource.setUser(null);
-        dataSource.setPassword(null);
-        dataSource.setDatabaseName(null);
-
-        DataModel dataModel = new MySQLJDBCDataModel(dataSource, "rating", "user_id", "movie_id", "score", null);
-        throw new Exception("Missing finished implementation");
-    */
 }

@@ -35,7 +35,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>emovie.recommender.runner.GearmanRunner</mainClass>
+                            <mainClass>emovie.recommender.runner.ServerRunner</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -59,6 +59,13 @@
         </dependency>
 
         <dependency>
+            <groupId>args4j</groupId>
+            <artifactId>args4j</artifactId>
+            <version>2.0.25</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.apache.mahout</groupId>
             <artifactId>mahout-integration</artifactId>
             <version>${apache.mahout.version}</version>
@@ -80,6 +87,12 @@
             <groupId>org.gearman</groupId>
             <artifactId>gearman-java</artifactId>
             <version>0.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.flexjson</groupId>
+            <artifactId>flexjson</artifactId>
+            <version>2.0</version>
         </dependency>
 
         <dependency>

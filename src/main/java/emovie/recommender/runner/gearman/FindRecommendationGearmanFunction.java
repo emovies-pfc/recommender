@@ -1,6 +1,8 @@
 package emovie.recommender.runner.gearman;
 
+import flexjson.JSONSerializer;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.recommender.GenericRecommendedItem;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.gearman.client.GearmanJobResult;
@@ -32,8 +34,10 @@ public class FindRecommendationGearmanFunction extends AbstractGearmanFunction i
         try {
             List<RecommendedItem> recommendations = recommender.recommend(Long.parseLong(user), 5);
 
+            JSONSerializer serializer = new JSONSerializer().include("itemId", "value").exclude("class");
+
             return new GearmanJobResultImpl(this.jobHandle,
-                    true, recommendations.toString().getBytes(),
+                    true, serializer.serialize(recommendations).getBytes(),
                     new byte[0], new byte[0], 0, 0);
         } catch (TasteException exception) {
             return new GearmanJobResultImpl(this.jobHandle,

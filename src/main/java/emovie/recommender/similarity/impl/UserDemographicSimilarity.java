@@ -4,8 +4,11 @@ import emovie.recommender.model.demographic.DemographicDataModel;
 import emovie.recommender.model.demographic.User;
 import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.common.RefreshHelper;
 import org.apache.mahout.cf.taste.similarity.PreferenceInferrer;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -18,10 +21,14 @@ import java.util.Collection;
  */
 public class UserDemographicSimilarity implements UserSimilarity {
     DemographicDataModel dataModel;
+    UserSimilarity similarity;
+    float demographicSimilarityWeight = 0.3f;
+    float genderWeight = 0.3f, ageWeight = 0.5f, zipWeight = 0.2f;
 
-    public UserDemographicSimilarity(DemographicDataModel dataModel)
+    public UserDemographicSimilarity(DemographicDataModel dataModel, UserSimilarity similarity)
     {
         this.dataModel = dataModel;
+        this.similarity = similarity;
     }
 
     @Override
@@ -29,23 +36,49 @@ public class UserDemographicSimilarity implements UserSimilarity {
         return computeSimilarity(dataModel.getUser(userID1), dataModel.getUser(userID2));
     }
 
-    private double computeSimilarity(User user1, User user2) {
-        double similarity = 0;
+    public void setDemographicSimilarityWeight(float demographicSimilarityWeight)
+    {
+        this.demographicSimilarityWeight = demographicSimilarityWeight;
+    }
+
+    public void setWeights(float gender, float age, float zip)
+    {
+        float total = gender + age + zip;
+
+        genderWeight = gender / total;
+        ageWeight = age / total;
+        zipWeight = zip / total;
+    }
+
+    private double computeSimilarity(User user1, User user2) throws TasteException {
+        double demographicSimilarity = 0;
 
         if (user1.getGender() == user2.getGender()) {
-            similarity += 1;
+            demographicSimilarity += genderWeight;
         }
 
-        return similarity;
+        if (user1.getAgeGroup() == user2.getAgeGroup()) {
+            demographicSimilarity += ageWeight;
+        }
+
+        if (user1.getZipCode().equals(user2.getZipCode())) {
+            demographicSimilarity += zipWeight;
+        }
+
+        double baseSimilarity = similarity.userSimilarity(user1.getId(), user2.getId());
+
+        return demographicSimilarity * demographicSimilarityWeight + baseSimilarity * (1 - demographicSimilarityWeight);
     }
 
     @Override
     public void setPreferenceInferrer(PreferenceInferrer inferrer) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        similarity.setPreferenceInferrer(inferrer);
     }
 
     @Override
     public void refresh(Collection<Refreshable> alreadyRefreshed) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        alreadyRefreshed = RefreshHelper.buildRefreshed(alreadyRefreshed);
+        RefreshHelper.maybeRefresh(alreadyRefreshed, similarity);
+        RefreshHelper.maybeRefresh(alreadyRefreshed, dataModel);
     }
 }

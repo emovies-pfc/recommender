@@ -8,8 +8,8 @@ package emovie.recommender.model.demographic;
  * To change this template use File | Settings | File Templates.
  */
 public interface User {
-    public double getId();
-    public int getZipCode();
+    public long getId();
+    public String getZipCode();
     public Gender getGender();
     public AgeGroup getAgeGroup();
 }

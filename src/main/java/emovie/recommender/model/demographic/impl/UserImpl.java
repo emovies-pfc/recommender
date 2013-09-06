@@ -13,12 +13,12 @@ import emovie.recommender.model.demographic.User;
  */
 public class UserImpl implements User {
 
-    private double id;
-    private int zipCode;
+    private long id;
+    private String zipCode;
     private Gender gender;
     private AgeGroup ageGroup;
 
-    public UserImpl(double id, int zipCode, Gender gender, AgeGroup ageGroup)
+    public UserImpl(long id, String zipCode, Gender gender, AgeGroup ageGroup)
     {
         this.id = id;
         this.zipCode = zipCode;
@@ -27,12 +27,12 @@ public class UserImpl implements User {
     }
 
     @Override
-    public double getId() {
+    public long getId() {
         return id;
     }
 
     @Override
-    public int getZipCode() {
+    public String getZipCode() {
         return zipCode;
     }
 
