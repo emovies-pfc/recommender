@@ -1,13 +1,12 @@
 package emovie.recommender.builder;
 
 import org.apache.mahout.cf.taste.common.TasteException;
-import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
 import org.apache.mahout.cf.taste.impl.recommender.AllUnknownItemsCandidateItemsStrategy;
-import org.apache.mahout.cf.taste.impl.recommender.svd.*;
+import org.apache.mahout.cf.taste.impl.recommender.svd.ExpectationMaximizationSVDFactorizer;
+import org.apache.mahout.cf.taste.impl.recommender.svd.Factorizer;
+import org.apache.mahout.cf.taste.impl.recommender.svd.SVDRecommender;
 import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.Recommender;
-import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,14 +15,14 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
  * Time: 11:23 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SVDRecommenderBuilderImpl implements SettingsAwareRecommenderBuilder {
-    public SVDRecommenderBuilderImpl() {}
-    public SVDRecommenderBuilderImpl(BuilderSettings settings) {}
+public class SVDRecommenderBuilderImpl3 implements SettingsAwareRecommenderBuilder {
+    public SVDRecommenderBuilderImpl3() {}
+    public SVDRecommenderBuilderImpl3(BuilderSettings settings) {}
 
     public Recommender buildRecommender(DataModel dataModel) throws TasteException {
         try {
             Factorizer factorizer;
-            factorizer = new ExpectationMaximizationSVDFactorizer(dataModel, 32, 20);
+            factorizer = new ExpectationMaximizationSVDFactorizer(dataModel, 128, 20);
             return new SVDRecommender(dataModel, factorizer, new AllUnknownItemsCandidateItemsStrategy());
         } catch (Exception e) {
             throw new TasteException(e);

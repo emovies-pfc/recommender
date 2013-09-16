@@ -15,6 +15,7 @@ public class RecommenderGearmanFunctionFactory implements GearmanFunctionFactory
     private Recommender recommender;
     private Class<? extends RecommenderGearmanFunction> functionClass;
     private String functionName;
+    private RecommenderGearmanFunction function = null;
 
     public RecommenderGearmanFunctionFactory(String functionName,Recommender recommender,
                                              Class<? extends RecommenderGearmanFunction> functionClass)
@@ -30,13 +31,15 @@ public class RecommenderGearmanFunctionFactory implements GearmanFunctionFactory
 
     @Override
     public GearmanFunction getFunction() {
-        RecommenderGearmanFunction function = null;
-        try {
-            function = functionClass.newInstance();
-            function.setRecommender(recommender);
-        } catch (Exception exception) {
-            exception.printStackTrace();
+        if (function == null) {
+            try {
+                function = functionClass.newInstance();
+                function.setRecommender(recommender);
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
         }
+
         return function;
     }
 }

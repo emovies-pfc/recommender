@@ -14,6 +14,9 @@ import org.apache.mahout.common.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Lumbendil
@@ -28,16 +31,23 @@ public class SettingsRunner
     private DataModel dataModel;
     private RecommenderEvaluator evaluator;
     private RecommenderIRStatsEvaluator irStatsEvaluator;
-    private int[] distances = {5, 20, 40, 100};
+    private int[] distances = {10, 100};
+    private BufferedWriter writer = null;
 
     private double trainingPercentage = 0.8;
     private double evaluationPercentage = 1;
+    private boolean useTestSeed;
 
-    public SettingsRunner(SettingsAwareRecommenderBuilder recommenderBuilder, DataModel dataModel) {
+    public SettingsRunner(SettingsAwareRecommenderBuilder recommenderBuilder, DataModel dataModel, boolean useTestSeed) {
         this.recommenderBuilder = recommenderBuilder;
         this.dataModel = dataModel;
         this.evaluator = new RMSRecommenderEvaluator();
         this.irStatsEvaluator = new GenericRecommenderIRStatsEvaluator();
+        this.useTestSeed = useTestSeed;
+    }
+
+    public SettingsRunner(SettingsAwareRecommenderBuilder recommenderBuilder, DataModel dataModel) {
+        this(recommenderBuilder, dataModel, true);
     }
 
     public double run(BuilderSettings settings) throws TasteException
@@ -47,6 +57,23 @@ public class SettingsRunner
         return run(true, false);
     }
 
+    public void setWriter(BufferedWriter writer)
+    {
+        this.writer = writer;
+    }
+
+    private void writeLine(String line)
+    {
+        if (writer != null) {
+            try {
+                writer.write(line);
+                writer.newLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public double run() throws TasteException
     {
         return run(true, true);
@@ -54,19 +81,24 @@ public class SettingsRunner
 
     public double run(boolean calculateRMSE, boolean calculateF1Score) throws TasteException
     {
-        RandomUtils.useTestSeed();
+        if (useTestSeed) {
+            RandomUtils.useTestSeed();
+        }
+
         if (calculateF1Score) {
             for(int distance: distances) {
-                IRStatistics statistics = irStatsEvaluator.evaluate(recommenderBuilder, null, dataModel, null, distance, 2, evaluationPercentage);
-                System.out.println("Statistics@" + distance + ": Precision=" + statistics.getPrecision() + ", Recall" + statistics.getRecall() + ", F1Score=" + statistics.getF1Measure());
+                IRStatistics statistics = irStatsEvaluator.evaluate(recommenderBuilder, null, dataModel, null, distance, GenericRecommenderIRStatsEvaluator.CHOOSE_THRESHOLD, evaluationPercentage);
+                writeLine("Statistics@" + distance + ": Precision=" + statistics.getPrecision() + ", Recall=" + statistics.getRecall() + ", F1Score=" + statistics.getF1Measure());
             }
         }
 
-        if (calculateRMSE) {
-            return evaluator.evaluate(recommenderBuilder, null, dataModel, trainingPercentage, evaluationPercentage);
-        } else {
+        if (!calculateRMSE) {
             return 0;
         }
+
+        double rmse = evaluator.evaluate(recommenderBuilder, null, dataModel, trainingPercentage, evaluationPercentage);
+        writeLine("RMSE=" + rmse);
+        return rmse;
     }
 
     public void setTrainingPercentage(double trainingPercentage) {

@@ -31,7 +31,4 @@ public class ServerArguments
 
     @Option(name = "-gp")
     public int gearmanPort = 4730;
-
-    @Option(name = "-w")
-    public int workers = 1;
 }

@@ -29,7 +29,7 @@ public class GearmanRunnable implements Runnable
         worker.addServer(connection);
 
         worker.registerFunctionFactory(new RecommenderGearmanFunctionFactory("recommend",
-                recommender, FindRecommendationGearmanFunction.class));
+                recommender, FindRecommendationGearmanFunction.class), 2);
 
         worker.work();
     }
